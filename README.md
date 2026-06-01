@@ -7,7 +7,13 @@
 </p>
 
 <p align="center">
-  <img src="assets/dashboard.png" alt="Slate boards dashboard" width="820" />
+  <strong><a href="https://slate.ammarbrohi.com/">▶ Live demo — slate.ammarbrohi.com</a></strong>
+</p>
+
+<p align="center">
+  <a href="https://slate.ammarbrohi.com/">
+    <img src="assets/dashboard.png" alt="Slate boards dashboard" width="820" />
+  </a>
 </p>
 
 ---
