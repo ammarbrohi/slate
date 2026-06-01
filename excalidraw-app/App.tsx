@@ -123,6 +123,12 @@ import {
 } from "./data/localStorage";
 
 import { loadFilesFromFirebase } from "./data/firebase";
+import { getBoardSession } from "./data/serverSession";
+import {
+  BackToBoards,
+  SaveStatusIndicator,
+  ShareBadge,
+} from "./components/BoardEditorControls";
 import {
   LibraryIndexedDBAdapter,
   LibraryLocalStorageMigrationAdapter,
@@ -145,7 +151,6 @@ import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
 
 import "./index.scss";
 
-import { ExcalidrawPlusPromoBanner } from "./components/ExcalidrawPlusPromoBanner";
 import { AppSidebar } from "./components/AppSidebar";
 
 import type { CollabAPI } from "./collab/Collab";
@@ -247,6 +252,17 @@ const initializeScene = async (opts: {
   };
 
   let roomLinkData = getCollaborationLinkData(window.location.href);
+  // board route (/b/:id): an authenticated, server-synced board behaves like a
+  // collab room whose id/key come from the sync server (set in serverSession).
+  if (!roomLinkData) {
+    const boardSession = getBoardSession();
+    if (boardSession) {
+      roomLinkData = {
+        roomId: boardSession.boardId,
+        roomKey: boardSession.roomKey,
+      };
+    }
+  }
   const isExternalScene = !!(id || jsonBackendMatch || roomLinkData);
   if (isExternalScene) {
     if (
@@ -959,12 +975,9 @@ const ExcalidrawWrapper = () => {
 
           return (
             <div className="excalidraw-ui-top-right">
-              {excalidrawAPI?.getEditorInterface().formFactor === "desktop" && (
-                <ExcalidrawPlusPromoBanner
-                  isSignedIn={isExcalidrawPlusSignedUser}
-                />
-              )}
-
+              <BackToBoards />
+              <ShareBadge />
+              <SaveStatusIndicator />
               {collabError.message && <CollabError collabError={collabError} />}
               <LiveCollaborationTrigger
                 isCollaborating={isCollaborating}

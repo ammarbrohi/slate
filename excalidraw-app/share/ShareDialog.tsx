@@ -7,7 +7,6 @@ import {
   copyIcon,
   LinkIcon,
   playerPlayIcon,
-  playerStopFilledIcon,
   share,
   shareIOS,
   shareWindows,
@@ -15,7 +14,7 @@ import {
 import { useUIAppState } from "@excalidraw/excalidraw/context/ui-appState";
 import { useCopyStatus } from "@excalidraw/excalidraw/hooks/useCopiedIndicator";
 import { useI18n } from "@excalidraw/excalidraw/i18n";
-import { KEYS, getFrame } from "@excalidraw/common";
+import { getFrame } from "@excalidraw/common";
 import { useEffect, useRef, useState } from "react";
 
 import { atom, useAtom, useAtomValue } from "../app-jotai";
@@ -57,11 +56,9 @@ export type ShareDialogProps = {
 const ActiveRoomDialog = ({
   collabAPI,
   activeRoomLink,
-  handleClose,
 }: {
   collabAPI: CollabAPI;
   activeRoomLink: string;
-  handleClose: () => void;
 }) => {
   const { t } = useI18n();
   const [, setJustCopied] = useState(false);
@@ -69,6 +66,7 @@ const ActiveRoomDialog = ({
   const ref = useRef<HTMLInputElement>(null);
   const isShareSupported = "share" in navigator;
   const { onCopy, copyStatus } = useCopyStatus();
+  const { collaborators } = useUIAppState();
 
   const copyRoomLink = async () => {
     try {
@@ -107,13 +105,6 @@ const ActiveRoomDialog = ({
       <h3 className="ShareDialog__active__header">
         {t("labels.liveCollaboration").replace(/\./g, "")}
       </h3>
-      <TextField
-        defaultValue={collabAPI.getUsername()}
-        placeholder="Your name"
-        label="Your name"
-        onChange={collabAPI.setUsername}
-        onKeyDown={(event) => event.key === KEYS.ENTER && handleClose()}
-      />
       <div className="ShareDialog__active__linkRow">
         <TextField
           ref={ref}
@@ -144,6 +135,23 @@ const ActiveRoomDialog = ({
         />
       </div>
       <QRCode value={activeRoomLink} />
+
+      <div className="ShareDialog__active__people">
+        <h4>People connected</h4>
+        <ul>
+          <li>
+            <span className="ShareDialog__active__people__dot" />
+            {collabAPI.getUsername() || "You"} (you)
+          </li>
+          {[...collaborators.values()].map((c, i) => (
+            <li key={c.id || i}>
+              <span className="ShareDialog__active__people__dot" />
+              {c.username || "Anonymous"}
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <div className="ShareDialog__active__description">
         <p>
           <span
@@ -155,24 +163,6 @@ const ActiveRoomDialog = ({
           </span>
           {t("roomDialog.desc_privacy")}
         </p>
-        <p>{t("roomDialog.desc_exitSession")}</p>
-      </div>
-
-      <div className="ShareDialog__active__actions">
-        <FilledButton
-          size="large"
-          variant="outlined"
-          color="danger"
-          label={t("roomDialog.button_stopSession")}
-          icon={playerStopFilledIcon}
-          onClick={() => {
-            trackEvent("share", "room closed");
-            collabAPI.stopCollaboration();
-            if (!collabAPI.isCollaborating()) {
-              handleClose();
-            }
-          }}
-        />
       </div>
     </>
   );
@@ -254,7 +244,6 @@ const ShareDialogInner = (props: ShareDialogProps) => {
           <ActiveRoomDialog
             collabAPI={props.collabAPI}
             activeRoomLink={activeRoomLink}
-            handleClose={props.handleClose}
           />
         ) : (
           <ShareDialogPicker {...props} />

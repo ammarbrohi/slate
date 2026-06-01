@@ -1,124 +1,97 @@
-<a href="https://excalidraw.com/" target="_blank" rel="noopener">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" alt="Excalidraw" srcset="https://excalidraw.nyc3.cdn.digitaloceanspaces.com/github/excalidraw_github_cover_2_dark.png" />
-    <img alt="Excalidraw" src="https://excalidraw.nyc3.cdn.digitaloceanspaces.com/github/excalidraw_github_cover_2.png" />
-  </picture>
-</a>
+<h1 align="center">Slate</h1>
 
-<h4 align="center">
-  <a href="https://excalidraw.com">Excalidraw Editor</a> |
-  <a href="https://plus.excalidraw.com/blog">Blog</a> |
-  <a href="https://docs.excalidraw.com">Documentation</a> |
-  <a href="https://plus.excalidraw.com">Excalidraw+</a>
-</h4>
-
-<div align="center">
-  <h2>
-    An open source virtual hand-drawn style whiteboard. </br>
-    Collaborative and end-to-end encrypted. </br>
-  <br />
-  </h2>
-</div>
-
-<br />
 <p align="center">
-  <a href="https://github.com/excalidraw/excalidraw/blob/master/LICENSE">
-    <img alt="Excalidraw is released under the MIT license." src="https://img.shields.io/badge/license-MIT-blue.svg"  /></a>
-  <a href="https://www.npmjs.com/package/@excalidraw/excalidraw">
-    <img alt="npm downloads/month" src="https://img.shields.io/npm/dm/@excalidraw/excalidraw"  /></a>
-  <a href="https://docs.excalidraw.com/docs/introduction/contributing">
-    <img alt="PRs welcome!" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat"  /></a>
-  <a href="https://discord.gg/UexuTaE">
-    <img alt="Chat on Discord" src="https://img.shields.io/discord/723672430744174682?color=738ad6&label=Chat%20on%20Discord&logo=discord&logoColor=ffffff&widget=false"/></a>
-  <a href="https://deepwiki.com/excalidraw/excalidraw">
-    <img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg" /></a>
-  <a href="https://twitter.com/excalidraw">
-    <img alt="Follow Excalidraw on Twitter" src="https://img.shields.io/twitter/follow/excalidraw.svg?label=follow+@excalidraw&style=social&logo=twitter"/></a>
+  The whiteboard your whole team draws on. A multi-user, self-hostable fork of
+  <a href="https://github.com/excalidraw/excalidraw">Excalidraw</a> — with accounts,
+  team spaces, sharing, and realtime sync to your own backend.
 </p>
 
-<div align="center">
-  <figure>
-    <a href="https://excalidraw.com" target="_blank" rel="noopener">
-      <img src="https://excalidraw.nyc3.cdn.digitaloceanspaces.com/github%2Fproduct_showcase.png" alt="Product showcase" />
-    </a>
-    <figcaption>
-      <p align="center">
-        Create beautiful hand-drawn like diagrams, wireframes, or whatever you like.
-      </p>
-    </figcaption>
-  </figure>
-</div>
+<p align="center">
+  <img src="assets/dashboard.png" alt="Slate boards dashboard" width="820" />
+</p>
 
-## Features
+---
 
-The Excalidraw editor (npm package) supports:
+## What is Slate?
 
-- 💯&nbsp;Free & open-source.
-- 🎨&nbsp;Infinite, canvas-based whiteboard.
-- ✍️&nbsp;Hand-drawn like style.
-- 🌓&nbsp;Dark mode.
-- 🏗️&nbsp;Customizable.
-- 📷&nbsp;Image support.
-- 😀&nbsp;Shape libraries support.
-- 🌐&nbsp;Localization (i18n) support.
-- 🖼️&nbsp;Export to PNG, SVG & clipboard.
-- 💾&nbsp;Open format - export drawings as an `.excalidraw` json file.
-- ⚒️&nbsp;Wide range of tools - rectangle, circle, diamond, arrow, line, free-draw, eraser...
-- ➡️&nbsp;Arrow-binding & labeled arrows.
-- 🔙&nbsp;Undo / Redo.
-- 🔍&nbsp;Zoom and panning support.
+Excalidraw is a brilliant local-first whiteboard. **Slate** keeps the editor and
+adds everything you need to run it as a real multi-user product:
 
-## Excalidraw.com
+- **Accounts** via [Clerk](https://clerk.com) (identity only — teams & boards live in your own Postgres)
+- **Boards dashboard** — private boards + team spaces, Trello-style cards with custom backgrounds
+- **Team spaces** — create teams, invite by email (pending invites auto-claim on signup), emoji icons, manage members
+- **Sharing** — invite people to a board, or generate a password-protected public link
+- **Realtime collaboration** — the same end-to-end-encrypted socket protocol as Excalidraw, relayed by your server
+- **Self-hostable** — Postgres for board metadata + encrypted scene snapshots, MinIO/S3 for image files. One `docker compose up`.
 
-The app hosted at [excalidraw.com](https://excalidraw.com) is a minimal showcase of what you can build with Excalidraw. Its [source code](https://github.com/excalidraw/excalidraw/tree/master/excalidraw-app) is part of this repository as well, and the app features:
+Scenes and image files are **end-to-end encrypted on the client** — the server only ever stores opaque ciphertext.
 
-- 📡&nbsp;PWA support (works offline).
-- 🤼&nbsp;Real-time collaboration.
-- 🔒&nbsp;End-to-end encryption.
-- 💾&nbsp;Local-first support (autosaves to the browser).
-- 🔗&nbsp;Shareable links (export to a readonly link you can share with others).
+## Architecture
 
-We'll be adding these features as drop-in plugins for the npm package in the future.
+```
+excalidraw-app/   React app (editor + Boards dashboard, landing, auth)
+packages/         The Excalidraw editor library (@excalidraw/*)
+server/           Sync backend — Bun + Hono + socket.io + Postgres + S3/MinIO
+```
+
+- **Identity**: Clerk issues sessions; the server verifies them via JWKS. Teams, boards, members and sharing are modeled in Postgres (not Clerk Organizations).
+- **Storage**: board metadata + encrypted scene snapshot in Postgres; encrypted image blobs in MinIO (or any S3 — e.g. Cloudflare R2).
+- **Realtime**: the server is a dumb encrypted relay speaking the `excalidraw-room` socket protocol; reconciliation stays client-side.
 
 ## Quick start
 
-**Note:** following instructions are for installing the Excalidraw [npm package](https://www.npmjs.com/package/@excalidraw/excalidraw) when integrating Excalidraw into your own app. To run the repository locally for development, please refer to our [Development Guide](https://docs.excalidraw.com/docs/introduction/development).
-
-Use `npm` or `yarn` to install the package.
+### 1. Backend (Docker)
 
 ```bash
-npm install react react-dom @excalidraw/excalidraw
-# or
-yarn add react react-dom @excalidraw/excalidraw
+cd server
+cp .env.example .env        # fill in JWT_SECRET, Postgres + MinIO creds, CLERK_ISSUER
+docker compose up -d --build
 ```
 
-Check out our [documentation](https://docs.excalidraw.com/docs/@excalidraw/excalidraw/installation) for more details!
+Brings up the sync server (`:3002`), Postgres, and MinIO (S3-compatible file store,
+persisted to `server/data/`). Schema migrations run on boot.
 
-## Contributing
+To use **Cloudflare R2** instead of the bundled MinIO, drop the `minio` services and
+point `S3_ENDPOINT` / keys at R2 (`S3_FORCE_PATH_STYLE=false`).
 
-- Missing something or found a bug? [Report here](https://github.com/excalidraw/excalidraw/issues).
-- Want to contribute? Check out our [contribution guide](https://docs.excalidraw.com/docs/introduction/contributing) or let us know on [Discord](https://discord.gg/UexuTaE).
-- Want to help with translations? See the [translation guide](https://docs.excalidraw.com/docs/introduction/contributing#translating).
+### 2. Frontend
 
-## Integrations
+```bash
+yarn install
+# enable Clerk by putting your publishable key in .env.development.local:
+#   VITE_APP_CLERK_PUBLISHABLE_KEY=pk_test_...
+# (leave it empty to use the built-in dev login — no Clerk needed)
+yarn start                  # http://localhost:3001
+```
 
-- [VScode extension](https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor)
-- [npm package](https://www.npmjs.com/package/@excalidraw/excalidraw)
+`VITE_APP_SYNC_SERVER` and `VITE_APP_WS_SERVER_URL` default to `http://localhost:3002`.
 
-## Who's integrating Excalidraw
+## Configuration
 
-[Google Cloud](https://googlecloudcheatsheet.withgoogle.com/architecture) • [Meta](https://meta.com/) • [CodeSandbox](https://codesandbox.io/) • [Obsidian Excalidraw](https://github.com/zsviczian/obsidian-excalidraw-plugin) • [Replit](https://replit.com/) • [Slite](https://slite.com/) • [Notion](https://notion.so/) • [HackerRank](https://www.hackerrank.com/) • and many others
+**Frontend** (`.env.development.local`, gitignored):
 
-## Sponsors & support
+| Var | Purpose |
+| --- | --- |
+| `VITE_APP_CLERK_PUBLISHABLE_KEY` | Clerk key; empty → built-in dev login |
+| `VITE_APP_SYNC_SERVER` | Sync server URL |
+| `VITE_APP_WS_SERVER_URL` | Realtime socket URL |
 
-If you like the project, you can become a sponsor at [Open Collective](https://opencollective.com/excalidraw) or use [Excalidraw+](https://plus.excalidraw.com/).
+**Backend** (`server/.env`, gitignored — see `server/.env.example`): `JWT_SECRET`,
+`POSTGRES_*`, `MINIO_ROOT_*` / `S3_*`, `CLERK_ISSUER`, bruteforce limits.
 
-## Thank you for supporting Excalidraw
+## Development
 
-[<img src="https://opencollective.com/excalidraw/tiers/sponsors/0/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/0/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/1/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/1/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/2/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/2/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/3/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/3/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/4/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/4/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/5/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/5/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/6/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/6/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/7/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/7/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/8/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/8/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/9/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/9/website) [<img src="https://opencollective.com/excalidraw/tiers/sponsors/10/avatar.svg?avatarHeight=120"/>](https://opencollective.com/excalidraw/tiers/sponsors/10/website)
+```bash
+yarn test:typecheck   # TypeScript
+yarn test:update      # tests (with snapshot updates)
+yarn fix              # format + lint
+```
 
-<a href="https://opencollective.com/excalidraw#category-CONTRIBUTE" target="_blank"><img src="https://opencollective.com/excalidraw/tiers/backers.svg?avatarHeight=32"/></a>
+## Credits & license
 
-Last but not least, we're thankful to these companies for offering their services for free:
+Slate is a fork of [**Excalidraw**](https://github.com/excalidraw/excalidraw) and
+builds entirely on its editor. Huge thanks to the Excalidraw team and contributors.
+Slate is **not affiliated with or endorsed by** the Excalidraw project.
 
-[![Vercel](./.github/assets/vercel.svg)](https://vercel.com) [![Sentry](./.github/assets/sentry.svg)](https://sentry.io) [![Crowdin](./.github/assets/crowdin.svg)](https://crowdin.com)
+The Excalidraw editor is [MIT licensed](packages/excalidraw/LICENSE); this fork
+retains that license.

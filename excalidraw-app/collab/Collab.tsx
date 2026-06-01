@@ -80,7 +80,8 @@ import {
   loadFromFirebase,
   saveFilesToFirebase,
   saveToFirebase,
-} from "../data/firebase";
+} from "../data/boardSync";
+import { getCurrentUserName, getSocketAuth } from "../data/serverSession";
 import {
   importUsernameFromLocalStorage,
   saveUsernameToLocalStorage,
@@ -471,7 +472,11 @@ class Collab extends PureComponent<CollabProps, CollabState> {
   startCollaboration = async (
     existingRoomLinkData: null | { roomId: string; roomKey: string },
   ) => {
-    if (!this.state.username) {
+    // prefer the signed-in user's name; fall back to a random one for guests
+    const signedInName = getCurrentUserName();
+    if (signedInName) {
+      this.setUsername(signedInName);
+    } else if (!this.state.username) {
       import("@excalidraw/random-username").then(({ getRandomUsername }) => {
         const username = getRandomUsername();
         this.setUsername(username);
@@ -523,6 +528,9 @@ class Collab extends PureComponent<CollabProps, CollabState> {
       this.portal.socket = this.portal.open(
         socketIOClient(import.meta.env.VITE_APP_WS_SERVER_URL, {
           transports: ["websocket", "polling"],
+          auth: (cb: (data: Record<string, unknown>) => void) => {
+            getSocketAuth().then(cb);
+          },
         }),
         roomId,
         roomKey,

@@ -186,6 +186,38 @@
         display: flex;
         justify-content: center;
       }
+
+      &__people {
+        h4 {
+          margin: 0 0 0.5em;
+          font-size: 0.9rem;
+          font-weight: 600;
+        }
+
+        ul {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 0.4em;
+        }
+
+        li {
+          display: flex;
+          align-items: center;
+          gap: 0.5em;
+          font-size: 0.95rem;
+        }
+
+        &__dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #2ecc71;
+          flex: 0 0 auto;
+        }
+      }
     }
   }
 }
