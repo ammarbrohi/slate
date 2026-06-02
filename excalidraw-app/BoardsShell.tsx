@@ -34,6 +34,8 @@ const BoardLoader = ({ id }: { id: string }) => {
           return;
         }
         setBoardSession({ boardId: meta.id, roomKey: meta.roomKey });
+        // tab title reflects the open board so tabs are distinguishable
+        document.title = `${meta.name} - Slate`;
         setState("ready");
       })
       .catch((e) => {
@@ -49,6 +51,8 @@ const BoardLoader = ({ id }: { id: string }) => {
       });
     return () => {
       alive = false;
+      // restore default when leaving the board
+      document.title = "Slate - lovely whiteboard";
     };
   }, [id]);
 
